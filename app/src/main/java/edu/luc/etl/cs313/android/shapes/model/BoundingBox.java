@@ -28,7 +28,7 @@ public class BoundingBox implements Visitor<Location> {
 
     @Override
     public Location onLocation(final Location l) {
-        return null;
+        return l;
     }
 
     @Override
