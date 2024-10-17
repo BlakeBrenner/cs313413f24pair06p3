@@ -19,7 +19,7 @@ public class Draw implements Visitor<Void> {
     public Draw(final Canvas canvas, final Paint paint) {
         this.canvas = canvas; // FIXME
         this.paint = paint; // FIXME
-        paint.setStyle(Style.STROKE);
+        //paint.setStyle(Style.STROKE);
     }
 
     @Override
@@ -44,6 +44,7 @@ public class Draw implements Visitor<Void> {
 
     @Override
     public Void onGroup(final Group g) {
+
         for(Shape shape : g.getShapes()){
             shape.accept(this);
         }
@@ -53,15 +54,29 @@ public class Draw implements Visitor<Void> {
     @Override
     public Void onLocation(final Location l) {
         canvas.save(); // Save the current canvas state
+        Shape shape = l.getShape();
         canvas.translate(l.getX(), l.getY());
-        l.getShape().accept(this); // Draw the shape at the new location
-        canvas.restore(); // Restore the previous canvas state
+        if (shape instanceof Rectangle) {
+            canvas.drawRect(0, 0,  ((Rectangle) shape).getWidth(), ((Rectangle) shape).getHeight(), paint);
+        }else if (shape instanceof Circle){
+            canvas.drawCircle(0, 0, ((Circle)shape).getRadius(), paint);
+        }else if( shape instanceof Polygon){
+            float[] pts = new float[((Polygon)shape).getPoints().size() * 2];
+            int i = 0;
+            for (Point vertex : ((Polygon)shape).getPoints()) {
+                pts[i++] = vertex.getX();
+                pts[i++] = vertex.getY();
+            }
+            canvas.drawLines(pts, paint);
+        }
+        canvas.translate(-l.getX(), -l.getY());
+        canvas.restore();
         return null;
     }
 
     @Override
     public Void onRectangle(final Rectangle r) {
-        canvas.drawRect(0,0, r.getWidth(),r.getHeight(), paint);
+        canvas.drawRect(0,0 , r.getHeight(),r.getWidth(), paint);
         return null;
     }
 
