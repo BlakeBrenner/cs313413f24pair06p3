@@ -25,17 +25,16 @@ public class BoundingBox implements Visitor<Location> {
     public Location onGroup(final Group g) {
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
-        int x = 0; int y = 0; int width = 0; int height= 0;
 
         // Calculate the bounding box for each shape in the group
         for (Shape shape : g.getShapes()) {
             Location shapeBBox = shape.accept(this);
             Shape currentShape = shapeBBox.getShape();
 
+            int x = shapeBBox.getX(); int y = shapeBBox.getY(); int width = 0; int height= 0;
+
             if (currentShape instanceof Rectangle) {
                 Rectangle rect = (Rectangle) currentShape;
-                x = shapeBBox.getX();
-                y = shapeBBox.getY();
                 width = rect.getWidth();
                 height = rect.getHeight();
 
@@ -63,10 +62,8 @@ public class BoundingBox implements Visitor<Location> {
 
                 x = minX;
                 y = minY;
-                width = maxX - x;
-                height = maxY - y;
-
-
+                width = maxX - minX;
+                height = maxY - minY;
             }
 
             minX = Math.min(minX, x);
