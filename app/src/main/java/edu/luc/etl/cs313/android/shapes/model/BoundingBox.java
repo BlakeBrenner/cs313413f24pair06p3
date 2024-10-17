@@ -26,50 +26,22 @@ public class BoundingBox implements Visitor<Location> {
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
 
-        // Calculate the bounding box for each shape in the group
-        for (Shape shape : g.getShapes()) {
-            Location shapeBBox = shape.accept(this);
-            Shape currentShape = shapeBBox.getShape();
+        for(Shape shape : g.getShapes()){
+            Location location = shape.accept(this);
+            if(location != null){
+                Shape contained = location.getShape();
+                if(contained instanceof Rectangle){
+                    Rectangle r = (Rectangle) contained;
+                    int x = location.getX();
+                    int y = location.getY();
 
-            int x = shapeBBox.getX(); int y = shapeBBox.getY(); int width = 0; int height= 0;
-
-            if (currentShape instanceof Rectangle) {
-                Rectangle rect = (Rectangle) currentShape;
-                width = rect.getWidth();
-                height = rect.getHeight();
-
-            }else if (currentShape instanceof Circle){
-                Circle circle = (Circle) currentShape;
-                int radius = circle.getRadius();
-                width = radius;
-                height = radius;
-
-                // Adjust x and y for the bounding box (top-left corner of the circle)
-                x = shapeBBox.getX() - radius;
-                y = shapeBBox.getY() - radius;
-            } else {
-                Polygon polygon = (Polygon) currentShape;
-                for (Point vertex : polygon.getPoints()) {
-                    int vertexX = vertex.getX();
-                    int vertexY = vertex.getY();
-
-                    minX = Math.min(minX, vertexX);
-                    minY = Math.min(minY, vertexY);
-                    maxX = Math.max(maxX, vertexX);
-                    maxY = Math.max(maxY, vertexY);
+                    minX = Math.min(minX, x);
+                    minY = Math.min(minY, y);
+                    maxX = Math.max(maxX, x + r.getWidth());
+                    maxY = Math.max(maxY, y+ r.getHeight());
 
                 }
-
-                x = minX;
-                y = minY;
-                width = maxX - minX;
-                height = maxY - minY;
             }
-
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            maxX = Math.max(maxX, x + width);
-            maxY = Math.max(maxY, y + height);
         }
 
         return new Location(minX, minY, new Rectangle(maxX - minX, maxY - minY));
@@ -78,7 +50,8 @@ public class BoundingBox implements Visitor<Location> {
 
     @Override
     public Location onLocation(final Location l) {
-        return l;
+        Location shapeLocation = l.getShape().accept(this);
+        return new Location(l.getX() + shapeLocation.getX(), l.getY() + shapeLocation.getY(), shapeLocation.getShape());
     }
 
     @Override
