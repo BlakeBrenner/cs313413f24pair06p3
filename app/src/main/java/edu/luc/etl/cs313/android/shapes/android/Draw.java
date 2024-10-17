@@ -19,7 +19,7 @@ public class Draw implements Visitor<Void> {
     public Draw(final Canvas canvas, final Paint paint) {
         this.canvas = canvas; // FIXME
         this.paint = paint; // FIXME
-        //paint.setStyle(Style.STROKE);
+        paint.setStyle(Style.STROKE);
     }
 
     @Override
@@ -30,15 +30,26 @@ public class Draw implements Visitor<Void> {
 
     @Override
     public Void onStrokeColor(final StrokeColor c) {
+        //int oldColor = paint.getColor();
+       // Paint.Style oldStyle = paint.getStyle();
+
+
         paint.setColor(c.getColor());
-        paint.setStyle(Style.STROKE);
+        paint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        c.getShape().accept(this);
+
+        //paint.setColor(oldColor); // Restore previous color
+        //paint.setStyle(oldStyle);  // Restore previous style
         return null;
     }
 
     @Override
     public Void onFill(final Fill f) {
+        //Paint.Style oldStyle = paint.getStyle();
         paint.setStyle(Paint.Style.FILL);
-
+        f.getShape().accept(this);
+        //paint.setStyle(oldStyle);// restores style
         return null;
     }
 
@@ -56,27 +67,15 @@ public class Draw implements Visitor<Void> {
         canvas.save(); // Save the current canvas state
         Shape shape = l.getShape();
         canvas.translate(l.getX(), l.getY());
-        if (shape instanceof Rectangle) {
-            canvas.drawRect(0, 0,  ((Rectangle) shape).getWidth(), ((Rectangle) shape).getHeight(), paint);
-        }else if (shape instanceof Circle){
-            canvas.drawCircle(0, 0, ((Circle)shape).getRadius(), paint);
-        }else if( shape instanceof Polygon){
-            float[] pts = new float[((Polygon)shape).getPoints().size() * 2];
-            int i = 0;
-            for (Point vertex : ((Polygon)shape).getPoints()) {
-                pts[i++] = vertex.getX();
-                pts[i++] = vertex.getY();
-            }
-            canvas.drawLines(pts, paint);
-        }
-        canvas.translate(-l.getX(), -l.getY());
+        l.getShape().accept(this);
+        canvas.translate(-l.getX(),-l.getY());
         canvas.restore();
         return null;
     }
 
     @Override
     public Void onRectangle(final Rectangle r) {
-        canvas.drawRect(0,0 , r.getHeight(),r.getWidth(), paint);
+        canvas.drawRect(0,0 , r.getWidth(),r.getHeight(), paint);
         return null;
     }
 
@@ -89,15 +88,22 @@ public class Draw implements Visitor<Void> {
 
     @Override
     public Void onPolygon(final Polygon s) {
+        int pointCount = s.getPoints().size(); // Assuming getPoints() returns a List<Point>
+        float[] pts = new float[pointCount * 2];
 
-        float[] pts = new float[s.getPoints().size() * 2];
         int i = 0;
         for (Point vertex : s.getPoints()) {
-            pts[i++] = vertex.getX();
-            pts[i++] = vertex.getY();
+            pts[i++] = vertex.getX(); // X coordinate of the vertex
+            pts[i++] = vertex.getY(); // Y coordinate of the vertex
         }
-        canvas.drawLines(pts, paint);
 
+        // Draw the polygon using a path to connect the points
+        if (pointCount > 0) {
+            canvas.drawLines(pts, paint); // Draw lines connecting the points
+
+            // Optionally close the polygon by drawing a line from the last point to the first
+            canvas.drawLine(pts[0], pts[1], pts[pointCount * 2 - 2], pts[pointCount * 2 - 1], paint);
+        }
         return null;
     }
 }
