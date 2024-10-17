@@ -43,19 +43,21 @@ public class Draw implements Visitor<Void> {
 
     @Override
     public Void onGroup(final Group g) {
-
+        for(Shape shape : g.getShapes()){
+            shape.accept(this);
+        }
         return null;
     }
 
     @Override
     public Void onLocation(final Location l) {
-
+        canvas.translate(l.getX(), l.getY());
         return null;
     }
 
     @Override
     public Void onRectangle(final Rectangle r) {
-
+        canvas.drawRect(0,0, r.getWidth(),r.getHeight(), paint);
         return null;
     }
 
@@ -68,9 +70,14 @@ public class Draw implements Visitor<Void> {
     @Override
     public Void onPolygon(final Polygon s) {
 
-        final float[] pts = null;
-
+        float[] pts = new float[s.getPoints().size() * 2];
+        int i = 0;
+        for (Point vertex : s.getPoints()) {
+            pts[i++] = vertex.getX();
+            pts[i++] = vertex.getY();
+        }
         canvas.drawLines(pts, paint);
+
         return null;
     }
 }
