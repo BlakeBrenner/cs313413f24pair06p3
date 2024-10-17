@@ -47,7 +47,7 @@ public class BoundingBox implements Visitor<Location> {
                 // Adjust x and y for the bounding box (top-left corner of the circle)
                 x = shapeBBox.getX() - radius;
                 y = shapeBBox.getY() - radius;
-            } else if (currentShape instanceof Polygon) {
+            } else {
                 Polygon polygon = (Polygon) currentShape;
                 for (Point vertex : polygon.getPoints()) {
                     int vertexX = vertex.getX();
