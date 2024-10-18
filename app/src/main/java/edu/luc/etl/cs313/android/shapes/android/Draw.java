@@ -33,11 +33,19 @@ public class Draw implements Visitor<Void> {
         //int oldColor = paint.getColor();
        // Paint.Style oldStyle = paint.getStyle();
 
-
-        paint.setColor(c.getColor());
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-
+        if (c.getColor() != 0) {
+            paint.setColor(c.getColor());
+            paint.setStyle(Paint.Style.FILL_AND_STROKE);
+            paint.setColor(c.getColor());
+        }
         c.getShape().accept(this);
+        paint.setStyle(null);
+
+        if (c.getColor() != 0) {
+            paint.setColor(c.getColor());
+            paint.setStyle(Paint.Style.FILL_AND_STROKE);
+            paint.setColor(c.getColor());
+        }
 
         //paint.setColor(oldColor); // Restore previous color
         //paint.setStyle(oldStyle);  // Restore previous style
@@ -65,9 +73,10 @@ public class Draw implements Visitor<Void> {
     @Override
     public Void onLocation(final Location l) {
         canvas.save(); // Save the current canvas state
-        Shape shape = l.getShape();
+        l.getShape().accept(this);
         canvas.translate(l.getX(), l.getY());
         l.getShape().accept(this);
+        canvas.save(); // Save the current canvas state
         canvas.translate(-l.getX(),-l.getY());
         canvas.restore();
         return null;
